@@ -1,17 +1,17 @@
 package com.github.bondarevv23.urlshortener.core.service;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.springframework.stereotype.Service;
 
 
-@Service
+@RequiredArgsConstructor
 public class AliasGeneratorServiceImpl implements AliasGeneratorService {
 
-    private static final int ALIAS_SIZE = 7;
+    private final int aliasSize;
 
     @Override
     public String generate() {
-        return RandomStringUtils.random(ALIAS_SIZE, true, true);
+        return RandomStringUtils.random(aliasSize, true, true);
     }
 
 }

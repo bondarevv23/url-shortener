@@ -16,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Optional;
 
@@ -31,10 +32,13 @@ public class UrlServiceImplTest {
 
     UrlServiceImpl service;
 
+    @Value("${alias.size})")
+    private int aliasSize;
+
     @BeforeAll
     void init() {
         repository = Mockito.mock(UrlRepository.class);
-        AliasGeneratorService generator = new AliasGeneratorServiceImpl();
+        AliasGeneratorService generator = new AliasGeneratorServiceImpl(aliasSize);
         service = new UrlServiceImpl(repository, generator);
     }
 

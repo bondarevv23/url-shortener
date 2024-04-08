@@ -16,4 +16,5 @@ public interface UrlRepository {
 
     boolean existsByAlias(String alias);
 
+    void deleteAll();
 }

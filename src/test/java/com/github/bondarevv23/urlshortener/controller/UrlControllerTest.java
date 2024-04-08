@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.bondarevv23.urlshortener.api.domain.Request;
 import com.github.bondarevv23.urlshortener.api.domain.Response;
+import com.github.bondarevv23.urlshortener.core.repository.UrlRepository;
 import com.github.bondarevv23.urlshortener.core.service.UrlService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +39,9 @@ public class UrlControllerTest {
     UrlService service;
 
     @Autowired
+    UrlRepository repository;
+
+    @Autowired
     MockMvc mockMvc;
 
     ObjectMapper objectMapper;
@@ -47,9 +52,12 @@ public class UrlControllerTest {
         objectMapper.registerModule(new JavaTimeModule());
     }
 
+    @AfterEach
+    void cleanData() {
+        repository.deleteAll();
+    }
+
     @Test
-    @Transactional
-    @Rollback
     void whenGetRequest_thenAcceptRedirect() throws Exception {
         // given
         String alias = "gooogle";
@@ -82,8 +90,6 @@ public class UrlControllerTest {
     }
 
     @Test
-    @Transactional
-    @Rollback
     void whenCreateLinkWithAlias_thenAliasReturnedAndLinkSaved() throws Exception {
         // given
         String url = "https://www.google.com/";
@@ -106,8 +112,6 @@ public class UrlControllerTest {
     }
 
     @Test
-    @Transactional
-    @Rollback
     void whenCreateLinkWithoutAlias_thenAliasCreatedAndLinkSaved() throws Exception {
         // given
         String url = "https://www.google.com/";
@@ -146,6 +150,27 @@ public class UrlControllerTest {
                 status().isBadRequest(),
                 jsonPath("$.message").isNotEmpty(),
                 jsonPath("$.errors.length()").value(2)
-        ).andReturn().getResponse().getContentAsString();
+        );
+    }
+
+    @Test
+    void whenCreateLinkWithExistedAlias_thenBadRequestReturned() throws Exception {
+        // given
+        String url = "https://www.google.com/";
+        String alias = "gooogle";
+        service.createLink(new Request(url, alias));
+        var request = new Request("https://www.google.com/123", alias);
+        String stringRequest = objectMapper.writeValueAsString(request);
+
+        // when
+
+        // then
+        mockMvc.perform(
+                post("/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(stringRequest)
+        ).andExpectAll(
+                status().isBadRequest()
+        );
     }
 }
